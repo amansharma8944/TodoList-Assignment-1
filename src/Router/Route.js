@@ -19,7 +19,7 @@ const routes = [
       requiredAuth: true,
     },
   },
-  { path: "/loginPage", component: LoginPage },
+  { path: "/loginPage", name: "loginpage", component: LoginPage },
 
   {
     path: "*",
@@ -28,19 +28,17 @@ const routes = [
 ];
 
 const router = new VueRouter({
-  mode: "history", // ✅ Use `mode: 'history'` instead of `createMemoryHistory()`
+  mode: "history",
   routes,
 });
 
-router.beforeEach( async (to, from, next) => {
+router.beforeEach((to, from, next) => {
   if (to.matched.some((record) => record.meta.requiredAuth)) {
-
-   
     auth.onAuthStateChanged((user) => {
       if (user) {
-        next(); 
+        next();
       } else {
-        next("/loginPage");
+        next("/loginpage");
       }
     });
   } else {

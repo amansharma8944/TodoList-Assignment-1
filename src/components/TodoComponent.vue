@@ -1,47 +1,60 @@
 <template>
-    <div class="leftcontainer">
-        <h4 class="todoHeading">To Do</h4>
-        <div class="inside_left_container">
-            <div class="inputForTodo">
-                <div class="inputForaddingtodoNextdiv">
-                    <input type="text" class="inputForaddingtodo" v-model="newTask" placeholder="Add a new task"
-                        v-on:keyup.enter="addtoTheList()" />
-                    <font-awesome-icon :icon="['fas', 'plus']" class="hoverpoitner"
-                        :style="{ cursor: 'pointer', height: '27px' }" v-on:click="addtoTheList()" />
-                </div>
-            </div>
+    <div class="todoMaintop_container" >
+        <button @click="SignOutClicked()" style="position: absolute;top: 4px;
+    right: 0px;
+    width: 91px;
+    height: 33px;
+    background: #e4e4e4;
+    border-radius: 8px;
+    color: black;">
 
-            <div class="listingALlTOdo">
-                <div class="PendingTask">
-                    <h4 class="tasknameHeading ">Pending Task</h4>
-                    <ul class="ulfullwidth">
-                        <p v-if="pendingTask.length <= 0" class="indicatorofEmpty"> No Pending Task</p>
-                        <li v-for="i in pendingTask" :key="i.id" class="listviewoftask full_li_width">
-                          
-                            <label class="checkbox-container">
-                                <input type="checkbox" v-model="i.isDone" class="custom-checkbox"
+signout
+</button>
+
+        <div class="leftcontainer">
+            
+            <h4 class="todoHeading">To Do</h4>
+            <div class="inside_left_container">
+                <div class="inputForTodo">
+                    <div class="inputForaddingtodoNextdiv">
+                        <input type="text" class="inputForaddingtodo" v-model="newTask" placeholder="Add a new task"
+                        v-on:keyup.enter="addtoTheList()" />
+                        <font-awesome-icon :icon="['fas', 'plus']" class="hoverpoitner"
+                        :style="{ cursor: 'pointer', height: '27px' }" v-on:click="addtoTheList()" />
+                    </div>
+                </div>
+                
+                <div class="listingALlTOdo">
+                    <div class="PendingTask">
+                        <h4 class="tasknameHeading ">Pending Task</h4>
+                        <ul class="ulfullwidth">
+                            <p v-if="pendingTask.length <= 0" class="indicatorofEmpty"> No Pending Task</p>
+                            <li v-for="i in pendingTask" :key="i.id" class="listviewoftask full_li_width">
+                                
+                                <label class="checkbox-container">
+                                    <input type="checkbox" v-model="i.isDone" class="custom-checkbox"
                                     @click="checkboxClicked(i)" />
-                                <span class="checkmark"></span>
-                            </label>
-                            <p v-show="i.editMode"></p>
-                            <input v-show="i.editMode" type="text" class="taskShowingTitle" v-model="i.task"
+                                    <span class="checkmark"></span>
+                                </label>
+                                <p v-show="i.editMode"></p>
+                                <input v-show="i.editMode" type="text" class="taskShowingTitle" v-model="i.task"
                                 @keyup.enter="FinalEdit(i)">
                             <p v-if="!i.editMode" class="taskShowingTitle">{{ i.task }}</p>
-
+                            
                             <font-awesome-icon v-if="!i.editMode" :icon="['fas', 'pen-to-square']" class="hoverclass"
-                                style="color:#007bff" v-on:click="editmodeclicked(i)" />
+                            style="color:#007bff" v-on:click="editmodeclicked(i)" />
                             <font-awesome-icon v-if="!i.editMode" :icon="['fas', 'trash']" v-on:click="deletetask(i.id)"
-                                class="hoverclass" style="color:red;" />
+                            class="hoverclass" style="color:red;" />
                             <font-awesome-icon v-if="i.editMode" :icon="['fas', 'xmark']" v-on:click="cancelEdit(i)"
-                                class="hoverclass" />
+                            class="hoverclass" />
                             <font-awesome-icon v-if="i.editMode" :icon="['fas', 'check']" v-on:click="FinalEdit(i)"
                                 class="hoverclass" />
 
                         </li>
                     </ul>
-
+                    
                 </div>
-
+                
                 <div class="CompletedTask">
                     <h4 class="tasknameHeading ">Done Tasks</h4>
                     <p v-if="doneTask.length <= 0" class="indicatorofEmpty"> No Done Task</p>
@@ -49,28 +62,30 @@
                         <li v-for="i in doneTask" :key="i.id" class="listviewoftask full_li_width">
                             <label class="checkbox-container">
                                 <input type="checkbox" v-model="i.isDone" class="custom-checkbox"
-                                    @click="checkboxClicked(i)" />
+                                @click="checkboxClicked(i)" />
                                 <span class="checkmark"></span>
                             </label>
                             <!-- <input type="checkbox" v-model="i.isDone" class="custom-checkbox" /> -->
                             <p class="taskShowingTitle donetaskShowLine" style="color:green;">{{ i.task }}</p>
                             <!-- <font-awesome-icon :icon="['fas', 'pen-to-square']" /> -->
                             <font-awesome-icon :icon="['fas', 'trash']" v-on:click="deletetask(i.id)" class="hoverclass"
-                                style="color:red;" />
-
+                            style="color:red;" />
+                            
                         </li>
                     </ul>
                 </div>
-
+                
             </div>
-
+            
         </div>
-
+        
     </div>
+</div>
 </template>
 
 <script>
-import { db } from '@/firebase/firebase'
+import { auth, db } from '@/firebase/firebase'
+// import firebase from '@/firebase/firebase'
 
 export default {
     name: 'TodoComponent',
@@ -102,7 +117,8 @@ export default {
                 task: this.newTask,
                 isDone: false,
                 editMode: false,
-                originalContent: this.newTask
+                originalContent: this.newTask,
+                uid:auth.currentUser.uid
             })
                 .then((docRef) => {
                     console.log("Document written with ID: ", docRef.id);
@@ -173,23 +189,39 @@ export default {
                     console.error("Error updating document: ", error);
                 });
 
+        },
+        SignOutClicked(){
+            auth.signOut().then(() => {})
+            .catch((error) => {
+                console.log(error)
+            });
         }
     },
     mounted() {
-        console.log(process.env.appId)
+        // console.log(process.env.appId)
+        // console.log("dkfjdkfjdkfjdkjf")
+        console.log(auth.currentUser.uid)
 
-        db.collection("TodoTask").onSnapshot((querySnapshot) => {
+        db.collection("TodoTask").where("uid", "==" ,auth.currentUser.uid).onSnapshot((querySnapshot) => {
+            console.log(querySnapshot)
             this.taskList = [];
             querySnapshot.forEach((doc) => {
 
-                console.log(doc.data(), doc.id)
-                this.taskList.push({
+                // console.log(doc.data(), doc.id)
+                // if(auth.currentUser.uid===doc.data().uid){
+                    console.log("entered the path")
+                    this.taskList.push({
                     id: doc.id,
                     task: doc.data().task,
                     isDone: doc.data().isDone,
                     editMode: false,
-                    originalContent: doc.data().task
+                    originalContent: doc.data().task,
+                    uid: doc.data().uid
                 })
+
+                console.log(this.taskList)
+                // }
+               
             });
         });
     }
@@ -198,6 +230,17 @@ export default {
 </script>
 
 <style scoped>
+
+.todoMaintop_container{
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+
+}
+nav{
+    display: flex;
+    justify-content: space-between;
+}
 .taskShowingTitle::-webkit-scrollbar {
     display: none;
 }
@@ -232,7 +275,7 @@ export default {
     font-family: "Patrick Hand", cursive;
     font-weight: 400;
     font-style: normal;
-    line-height: 0px;
+    /* line-height: 0px; */
     font-size: 25px;
     color: black;
 }
@@ -264,7 +307,7 @@ export default {
     flex-direction: column;
     justify-content: start;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
     border: 1px solid #eee7e7;
     box-shadow: 1px 2px 5px 0px #dcd2d2;
 }
@@ -311,7 +354,7 @@ export default {
     flex-direction: column;
     justify-content: start;
     align-items: start;
-    margin-bottom: 11px;
+    margin-bottom: 15px;
     padding: 16px;
 }
 
